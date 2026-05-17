@@ -10,6 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+
 
 const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -29,9 +35,18 @@ export default function LoginPage() {
         resolver: zodResolver(loginSchema),
     });
 
+    const router = useRouter();
+    const setSession = useAuthStore((s) => s.setSession);
+
     const onSubmit = async (data: LoginForm) => {
-        await new Promise((r) => setTimeout(r, 1000));
-        console.log(data);
+        try {
+            const res = await api.post('/auth/login', data);
+            setSession(res.data.token, res.data.user);
+            toast.success('Welcome back!');
+            router.push('/dashboard');
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || 'Invalid credentials');
+        }
     };
 
     return (
@@ -143,6 +158,7 @@ export default function LoginPage() {
                             Sign up
                         </Link>
                     </p>
+                    <Toaster />
                 </div>
             </motion.div>
         </div>
