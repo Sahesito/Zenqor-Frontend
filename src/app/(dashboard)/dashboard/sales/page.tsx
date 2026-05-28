@@ -1,18 +1,42 @@
 "use client";
 
 import { Header } from "@/components/dashboard/header";
-import { SalesTable } from "@/components/dashboard/sales/sales-table";
 import { MetricCard } from "@/components/dashboard/metric-card";
+import { SalesTable } from "@/components/dashboard/sales/sales-table";
+import { useOrderStats } from "@/hooks/use-orders";
 import { DollarSign, ShoppingCart, TrendingUp, Clock } from "lucide-react";
-
-const metrics = [
-    { title: "Total Revenue", value: "$22,694", change: 14.2, icon: DollarSign },
-    { title: "Total Orders", value: "7", change: 8.1, icon: ShoppingCart },
-    { title: "Avg. Order Value", value: "$3,242", change: 5.3, icon: TrendingUp },
-    { title: "Pending Orders", value: "2", change: -12.0, icon: Clock },
-];
+import { formatCurrency } from "@/lib/utils";
 
 export default function SalesPage() {
+    const { data: stats } = useOrderStats();
+
+    const metrics = [
+        {
+            title: "Total Revenue",
+            value: formatCurrency(stats?.revenue || 0),
+            change: 14.2,
+            icon: DollarSign,
+        },
+        {
+            title: "Total Orders",
+            value: String(stats?.total || 0),
+            change: 8.1,
+            icon: ShoppingCart,
+        },
+        {
+            title: "Completed",
+            value: String(stats?.completed || 0),
+            change: 5.3,
+            icon: TrendingUp,
+        },
+        {
+            title: "Pending",
+            value: String(stats?.pending || 0),
+            change: -12.0,
+            icon: Clock,
+        },
+    ];
+
     return (
         <>
             <Header title="Sales" description="Track and manage your orders" />
