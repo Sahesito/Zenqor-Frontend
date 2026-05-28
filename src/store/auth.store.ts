@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, saveSession, clearSession, getUser, getToken } from '@/lib/auth';
+import { User, saveSession, clearSession } from '@/lib/auth';
 
 interface AuthState {
     user: User | null;
@@ -17,18 +17,27 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     setSession: (token, user) => {
         saveSession(token, user);
-        set({ token, user });
+        set({ token, user, isLoading: false });
     },
 
     logout: () => {
         clearSession();
-        set({ token: null, user: null });
+        set({ token: null, user: null, isLoading: false });
         window.location.href = '/login';
     },
 
     initialize: () => {
-        const token = getToken();
-        const user = getUser();
-        set({ token, user, isLoading: false });
+        try {
+            const token = typeof window !== 'undefined'
+                ? localStorage.getItem('zenqor_token')
+                : null;
+            const raw = typeof window !== 'undefined'
+                ? localStorage.getItem('zenqor_user')
+                : null;
+            const user = raw ? JSON.parse(raw) : null;
+            set({ token, user, isLoading: false });
+        } catch {
+            set({ token: null, user: null, isLoading: false });
+        }
     },
 }));

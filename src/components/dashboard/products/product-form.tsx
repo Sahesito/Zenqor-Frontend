@@ -20,6 +20,8 @@ import {
     SheetTitle,
     SheetDescription,
 } from "@/components/ui/sheet";
+import { useCategories } from "@/hooks/use-categories";
+import { useCreateProduct, useUpdateProduct, type Product } from "@/hooks/use-products";
 
 const productSchema = z.object({
     name: z.string().min(2, "Name is required"),
@@ -42,10 +44,9 @@ type ProductForm = z.infer<typeof productSchema>;
 interface ProductFormProps {
     open: boolean;
     onClose: () => void;
-    defaultValues?: Partial<ProductFormValues>;
+    defaultValues?: Product | null;
     mode?: "create" | "edit";
 }
-
 export function ProductForm({
     open,
     onClose,
@@ -60,12 +61,40 @@ export function ProductForm({
         reset,
     } = useForm<ProductForm>({
         resolver: zodResolver(productSchema) as any,
-        defaultValues: defaultValues || { status: "active" },
+        defaultValues: defaultValues
+            ? {
+                name: defaultValues.name,
+                category: defaultValues.categoryId,
+                price: defaultValues.price,
+                stock: defaultValues.stock,
+                status: defaultValues.isActive ? "active" : "inactive",
+            }
+            : { status: "active" },
     });
 
+    const { data: categories } = useCategories();
+    const createProduct = useCreateProduct();
+    const updateProduct = useUpdateProduct();
+
     const onSubmit = async (data: ProductFormValues) => {
-        await new Promise((r) => setTimeout(r, 800));
-        console.log(data);
+        if (mode === "create") {
+            await createProduct.mutateAsync({
+                name: data.name,
+                price: data.price,
+                stock: data.stock,
+                categoryId: data.category,
+            });
+        } else if (defaultValues?.id) {
+            await updateProduct.mutateAsync({
+                id: defaultValues.id,
+                data: {
+                    name: data.name,
+                    price: data.price,
+                    stock: data.stock,
+                    categoryId: data.category,
+                },
+            });
+        }
         reset();
         onClose();
     };
@@ -96,14 +125,14 @@ export function ProductForm({
 
                     <div className="space-y-2">
                         <Label className="text-sm text-[#9CA3AF]">Category</Label>
-                        <Select onValueChange={(v) => setValue("category", v)} defaultValue={defaultValues?.category}>
+                        <Select onValueChange={(v) => setValue("category", v)} defaultValue={defaultValues?.categoryId}>
                             <SelectTrigger className={inputClass}>
                                 <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#111827] border-[#1f2d3d]">
-                                {["Software", "Templates", "Services", "Hardware"].map((c) => (
-                                    <SelectItem key={c} value={c} className="text-[#F3F4F6] focus:bg-[#1f2d3d]">
-                                        {c}
+                                {categories?.map((c) => (
+                                    <SelectItem key={c.id} value={c.id} className="text-[#F3F4F6] focus:bg-[#1f2d3d]">
+                                        {c.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -126,7 +155,7 @@ export function ProductForm({
 
                     <div className="space-y-2">
                         <Label className="text-sm text-[#9CA3AF]">Status</Label>
-                        <Select onValueChange={(v) => setValue("status", v as ProductForm["status"])} defaultValue={defaultValues?.status || "active"}>
+                        <Select onValueChange={(v) => setValue("status", v as ProductForm["status"])} defaultValue={defaultValues?.isActive === false ? "inactive" : "active"}>
                             <SelectTrigger className={inputClass}>
                                 <SelectValue />
                             </SelectTrigger>

@@ -5,7 +5,6 @@ export const api = axios.create({
     headers: { 'Content-Type': 'application/json' },
 });
 
-
 api.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('zenqor_token');
@@ -17,10 +16,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 && typeof window !== 'undefined') {
-            localStorage.removeItem('zenqor_token');
-            localStorage.removeItem('zenqor_user');
-            window.location.href = '/login';
+        if (typeof window !== 'undefined' && error.response?.status === 401) {
+            const token = localStorage.getItem('zenqor_token');
+            const isLoginPage = window.location.pathname.includes('/login');
+            if (!token && !isLoginPage) {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     },

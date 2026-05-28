@@ -1,20 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { token, isLoading } = useAuthStore();
+    const { token, initialize } = useAuthStore();
+    const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        if (!isLoading && !token) {
+        initialize();
+        setReady(true);
+    }, []);
+
+    useEffect(() => {
+        if (ready && !token) {
             router.push("/login");
         }
-    }, [token, isLoading, router]);
+    }, [ready, token]);
 
-    if (isLoading) {
+    if (!ready) {
         return (
             <div className="min-h-screen bg-[#07111B] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
