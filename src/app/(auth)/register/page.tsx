@@ -10,6 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const registerSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
@@ -35,9 +40,21 @@ export default function RegisterPage() {
     });
 
     const onSubmit = async (data: RegisterForm) => {
-        await new Promise((r) => setTimeout(r, 1000));
-        console.log(data);
+        try {
+            const res = await api.post('/auth/register', {
+                name: data.name,
+                email: data.email,
+                password: data.password,
+            });
+            setSession(res.data.token, res.data.user);
+            toast.success('Account created!');
+            router.push('/dashboard');
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || 'Registration failed');
+        }
     };
+    const router = useRouter();
+    const setSession = useAuthStore((s) => s.setSession);
 
     return (
         <div className="min-h-screen bg-[#07111B] flex items-center justify-center px-6">
@@ -160,6 +177,7 @@ export default function RegisterPage() {
                     </p>
                 </div>
             </motion.div>
+        <Toaster />
         </div>
     );
 }

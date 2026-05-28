@@ -22,6 +22,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useAuthStore } from "@/store/auth.store";
 
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -35,6 +36,7 @@ const navItems = [
 export function Sidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const pathname = usePathname();
+    const { user, logout } = useAuthStore();
 
     return (
         <TooltipProvider delayDuration={0}>
@@ -117,7 +119,7 @@ export function Sidebar() {
                     <div className="flex items-center gap-3">
                         <Avatar className="w-8 h-8 shrink-0">
                             <AvatarFallback className="bg-[#C89B5A]/20 text-[#C89B5A] text-xs font-semibold">
-                                JD
+                                {user?.name?.split(" ").map((n) => n[0]).join("") || "??"}
                             </AvatarFallback>
                         </Avatar>
                         <AnimatePresence>
@@ -129,8 +131,12 @@ export function Sidebar() {
                                     transition={{ duration: 0.2 }}
                                     className="flex-1 min-w-0 overflow-hidden"
                                 >
-                                    <p className="text-xs font-medium text-[#F3F4F6] truncate">John Doe</p>
-                                    <p className="text-xs text-[#9CA3AF] truncate">Admin</p>
+                                    <p className="text-xs font-medium text-[#F3F4F6] truncate">
+                                        {user?.name || "User"}
+                                    </p>
+                                    <p className="text-xs text-[#9CA3AF] truncate capitalize">
+                                        {user?.role?.toLowerCase() || "user"}
+                                    </p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -140,6 +146,7 @@ export function Sidebar() {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
+                                    onClick={logout}
                                     className="text-[#6B7280] hover:text-[#EF4444] transition-colors shrink-0"
                                 >
                                     <LogOut className="w-4 h-4" />
