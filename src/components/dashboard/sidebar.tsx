@@ -4,16 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-    LayoutDashboard,
-    Package,
-    ShoppingCart,
-    Users,
-    BarChart3,
-    Settings,
-    ChevronLeft,
-    LogOut,
-} from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users, BarChart3, Settings, Tag, LogOut, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -27,10 +18,11 @@ import { useAuthStore } from "@/store/auth.store";
 const navItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
     { href: "/dashboard/products", icon: Package, label: "Products" },
+    { href: "/dashboard/categories", icon: Tag, label: "Categories" },
     { href: "/dashboard/sales", icon: ShoppingCart, label: "Sales" },
     { href: "/dashboard/customers", icon: Users, label: "Customers" },
     { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-    { href: "/dashboard/settings", icon: Settings, label: "Settings" },
+    { href: "/account/settings", icon: Settings, label: "Settings" },
 ];
 
 export function Sidebar() {

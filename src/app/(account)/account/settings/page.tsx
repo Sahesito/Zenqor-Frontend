@@ -18,6 +18,7 @@ import { Camera, Shield, Bell, Palette, User, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
+
 const profileSchema = z.object({
     name: z.string().min(2, "Name is required"),
     email: z.string().email("Invalid email"),
@@ -38,7 +39,7 @@ const tabs = [
 ];
 
 export default function AccountSettingsPage() {
-    const { user } = useAuthStore();
+    const { user, setSession, token } = useAuthStore();
     const isAdmin = user?.role === "ADMIN";
 
     const [activeTab, setActiveTab] = useState("profile");
@@ -71,11 +72,14 @@ export default function AccountSettingsPage() {
 
     const onSaveProfile = async (data: ProfileForm) => {
         try {
-            await api.patch("/users/profile", {
+            const res = await api.patch("/users/profile", {
                 name: data.name,
                 email: data.email,
                 company: data.company,
             });
+            if (token) {
+                setSession(token, { ...user!, ...res.data });
+            }
             toast.success("Profile updated", { description: "Your changes have been saved." });
         } catch (err: any) {
             toast.error(err.response?.data?.message || "Failed to update profile");
@@ -328,8 +332,8 @@ export default function AccountSettingsPage() {
                                                         key={theme.label}
                                                         onClick={() => toast.info(`${theme.label} theme coming soon`)}
                                                         className={`relative rounded-xl p-3 border transition-all duration-200 ${theme.active
-                                                                ? "border-[#C89B5A]/40 bg-[#C89B5A]/5"
-                                                                : "border-[#1f2d3d] hover:border-[#C89B5A]/20"
+                                                            ? "border-[#C89B5A]/40 bg-[#C89B5A]/5"
+                                                            : "border-[#1f2d3d] hover:border-[#C89B5A]/20"
                                                             }`}
                                                     >
                                                         <div className="w-full h-12 rounded-lg mb-2" style={{ background: theme.bg }}>
