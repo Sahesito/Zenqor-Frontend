@@ -8,9 +8,10 @@ interface AuthState {
     setSession: (token: string, user: User) => void;
     logout: () => void;
     initialize: () => void;
+    isAdmin: () => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     token: null,
     isLoading: true,
@@ -40,4 +41,6 @@ export const useAuthStore = create<AuthState>((set) => ({
             set({ token: null, user: null, isLoading: false });
         }
     },
+
+    isAdmin: () => get().user?.role === 'ADMIN',
 }));

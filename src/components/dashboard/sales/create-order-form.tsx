@@ -1,32 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
+    Sheet, SheetContent, SheetHeader,
+    SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+    Select, SelectContent, SelectItem,
+    SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { useProducts } from "@/hooks/use-products";
-import { useCustomers } from "@/hooks/use-customers";
 import { useCreateOrder } from "@/hooks/use-orders";
+import { useAuthStore } from "@/store/auth.store";
 import { formatCurrency } from "@/lib/utils";
 import {
     Plus, Minus, Trash2, ShoppingCart,
-    User, Package, CreditCard, FileText,
+    Package, CreditCard, FileText,
     ChevronRight, ChevronLeft, Check,
 } from "lucide-react";
 
@@ -43,10 +35,9 @@ interface CreateOrderFormProps {
 }
 
 const STEPS = [
-    { id: 1, label: "Customer", icon: User },
-    { id: 2, label: "Products", icon: Package },
-    { id: 3, label: "Payment", icon: CreditCard },
-    { id: 4, label: "Review", icon: FileText },
+    { id: 1, label: "Products", icon: Package },
+    { id: 2, label: "Payment", icon: CreditCard },
+    { id: 3, label: "Review", icon: FileText },
 ];
 
 const PAYMENT_METHODS = [
@@ -58,21 +49,19 @@ const PAYMENT_METHODS = [
 
 export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
     const [step, setStep] = useState(1);
-    const [selectedCustomer, setSelectedCustomer] = useState<string>("");
     const [items, setItems] = useState<OrderItem[]>([]);
-    const [paymentMethod, setPaymentMethod] = useState<string>("");
-    const [notes, setNotes] = useState<string>("");
-    const [selectedProduct, setSelectedProduct] = useState<string>("");
+    const [paymentMethod, setPaymentMethod] = useState("");
+    const [notes, setNotes] = useState("");
+    const [selectedProduct, setSelectedProduct] = useState("");
 
+    const { user } = useAuthStore();
     const { data: products } = useProducts();
-    const { data: customers } = useCustomers();
     const createOrder = useCreateOrder();
 
     const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     const resetForm = () => {
         setStep(1);
-        setSelectedCustomer("");
         setItems([]);
         setPaymentMethod("");
         setNotes("");
@@ -127,13 +116,10 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
     };
 
     const canNext = () => {
-        if (step === 1) return !!selectedCustomer;
-        if (step === 2) return items.length > 0;
-        if (step === 3) return !!paymentMethod;
+        if (step === 1) return items.length > 0;
+        if (step === 2) return !!paymentMethod;
         return true;
     };
-
-    const customer = customers?.find((c) => c.id === selectedCustomer);
 
     return (
         <Sheet open={open} onOpenChange={handleClose}>
@@ -141,11 +127,12 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                 <SheetHeader className="mb-6">
                     <SheetTitle className="text-[#F3F4F6]">New Order</SheetTitle>
                     <SheetDescription className="text-[#9CA3AF]">
-                        Create a new sales order
+                        Creating order for{" "}
+                        <span className="text-[#C89B5A] font-medium">{user?.name}</span>
                     </SheetDescription>
                 </SheetHeader>
 
-                {/* Steps indicator */}
+                {/* Steps */}
                 <div className="flex items-center gap-2 mb-6">
                     {STEPS.map((s, i) => (
                         <div key={s.id} className="flex items-center gap-2 flex-1">
@@ -171,7 +158,7 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                     ))}
                 </div>
 
-                {/* Step content */}
+                {/* Content */}
                 <div className="flex-1 overflow-y-auto">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -182,68 +169,8 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                             transition={{ duration: 0.2 }}
                             className="space-y-4"
                         >
-                            {/* Step 1 — Customer */}
+                            {/* Step 1 — Products */}
                             {step === 1 && (
-                                <div className="space-y-4">
-                                    <div>
-                                        <Label className="text-sm text-[#9CA3AF] mb-2 block">
-                                            Select Customer
-                                        </Label>
-                                        <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                                            <SelectTrigger className="bg-[#07111B] border-[#1f2d3d] text-[#F3F4F6] h-11 rounded-xl focus:border-[#C89B5A]/50">
-                                                <SelectValue placeholder="Choose a customer..." />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-[#111827] border-[#1f2d3d]">
-                                                {customers?.map((c) => (
-                                                    <SelectItem
-                                                        key={c.id}
-                                                        value={c.id}
-                                                        className="text-[#F3F4F6] focus:bg-[#1f2d3d]"
-                                                    >
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-[#C89B5A]/20 flex items-center justify-center text-xs text-[#C89B5A] font-semibold">
-                                                                {c.name[0]}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm">{c.name}</p>
-                                                                <p className="text-xs text-[#9CA3AF]">{c.email}</p>
-                                                            </div>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {/* Customer preview */}
-                                    {customer && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="bg-[#07111B] border border-[#C89B5A]/20 rounded-xl p-4"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-[#C89B5A]/20 flex items-center justify-center text-[#C89B5A] font-semibold">
-                                                    {customer.name[0]}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-[#F3F4F6]">{customer.name}</p>
-                                                    <p className="text-xs text-[#9CA3AF]">{customer.email}</p>
-                                                    {customer.company && (
-                                                        <p className="text-xs text-[#6B7280]">{customer.company}</p>
-                                                    )}
-                                                </div>
-                                                <Badge className="ml-auto bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs">
-                                                    {customer._count.orders} orders
-                                                </Badge>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Step 2 — Products */}
-                            {step === 2 && (
                                 <div className="space-y-4">
                                     <div className="flex gap-2">
                                         <Select value={selectedProduct} onValueChange={setSelectedProduct}>
@@ -276,7 +203,6 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                         </Button>
                                     </div>
 
-                                    {/* Items list */}
                                     {items.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center py-12 border border-dashed border-[#1f2d3d] rounded-xl">
                                             <ShoppingCart className="w-8 h-8 text-[#6B7280] mb-2" />
@@ -299,7 +225,6 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                                             {formatCurrency(item.price)} each
                                                         </p>
                                                     </div>
-
                                                     <div className="flex items-center gap-2 shrink-0">
                                                         <button
                                                             onClick={() => updateQty(item.productId, -1)}
@@ -317,11 +242,9 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                                             <Plus className="w-3 h-3" />
                                                         </button>
                                                     </div>
-
                                                     <p className="text-sm font-semibold text-[#C89B5A] w-20 text-right shrink-0">
                                                         {formatCurrency(item.price * item.quantity)}
                                                     </p>
-
                                                     <button
                                                         onClick={() => removeItem(item.productId)}
                                                         className="text-[#6B7280] hover:text-red-400 transition-colors"
@@ -330,7 +253,6 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                                     </button>
                                                 </motion.div>
                                             ))}
-
                                             <div className="flex items-center justify-between pt-2 border-t border-[#1f2d3d]">
                                                 <span className="text-sm text-[#9CA3AF]">Subtotal</span>
                                                 <span className="text-lg font-semibold text-[#F3F4F6]">
@@ -342,18 +264,16 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                 </div>
                             )}
 
-                            {/* Step 3 — Payment */}
-                            {step === 3 && (
+                            {/* Step 2 — Payment */}
+                            {step === 2 && (
                                 <div className="space-y-4">
-                                    <Label className="text-sm text-[#9CA3AF] block mb-2">
-                                        Payment Method
-                                    </Label>
+                                    <Label className="text-sm text-[#9CA3AF] block">Payment Method</Label>
                                     <div className="grid grid-cols-2 gap-3">
                                         {PAYMENT_METHODS.map((method) => (
                                             <button
                                                 key={method.value}
                                                 onClick={() => setPaymentMethod(method.value)}
-                                                className={`p-4 rounded-xl border text-left transition-all duration-200 ${paymentMethod === method.value
+                                                className={`relative p-4 rounded-xl border text-left transition-all duration-200 ${paymentMethod === method.value
                                                         ? "border-[#C89B5A]/40 bg-[#C89B5A]/5"
                                                         : "border-[#1f2d3d] hover:border-[#C89B5A]/20 bg-[#07111B]"
                                                     }`}
@@ -369,7 +289,7 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                         ))}
                                     </div>
 
-                                    <div className="space-y-2 mt-4">
+                                    <div className="space-y-2">
                                         <Label className="text-sm text-[#9CA3AF]">Notes (optional)</Label>
                                         <textarea
                                             value={notes}
@@ -382,14 +302,14 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                 </div>
                             )}
 
-                            {/* Step 4 — Review */}
-                            {step === 4 && (
+                            {/* Step 3 — Review */}
+                            {step === 3 && (
                                 <div className="space-y-4">
                                     {/* Customer */}
                                     <div className="bg-[#07111B] border border-[#1f2d3d] rounded-xl p-4">
                                         <p className="text-xs text-[#6B7280] mb-2 uppercase tracking-wider">Customer</p>
-                                        <p className="text-sm font-semibold text-[#F3F4F6]">{customer?.name}</p>
-                                        <p className="text-xs text-[#9CA3AF]">{customer?.email}</p>
+                                        <p className="text-sm font-semibold text-[#F3F4F6]">{user?.name}</p>
+                                        <p className="text-xs text-[#9CA3AF]">{user?.email}</p>
                                     </div>
 
                                     {/* Items */}
@@ -414,7 +334,7 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                                     {/* Payment */}
                                     <div className="bg-[#07111B] border border-[#1f2d3d] rounded-xl p-4">
                                         <p className="text-xs text-[#6B7280] mb-2 uppercase tracking-wider">Payment</p>
-                                        <p className="text-sm font-medium text-[#F3F4F6] capitalize">
+                                        <p className="text-sm font-medium text-[#F3F4F6]">
                                             {PAYMENT_METHODS.find((m) => m.value === paymentMethod)?.icon}{" "}
                                             {PAYMENT_METHODS.find((m) => m.value === paymentMethod)?.label}
                                         </p>
@@ -434,7 +354,7 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                     </AnimatePresence>
                 </div>
 
-                {/* Navigation buttons */}
+                {/* Navigation */}
                 <div className="flex gap-3 pt-4 border-t border-[#1f2d3d] mt-4">
                     {step > 1 && (
                         <Button
@@ -447,7 +367,7 @@ export function CreateOrderForm({ open, onClose }: CreateOrderFormProps) {
                         </Button>
                     )}
 
-                    {step < 4 ? (
+                    {step < 3 ? (
                         <Button
                             onClick={() => setStep(step + 1)}
                             disabled={!canNext()}

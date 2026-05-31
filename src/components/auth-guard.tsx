@@ -6,7 +6,7 @@ import { useAuthStore } from "@/store/auth.store";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { token, initialize } = useAuthStore();
+    const { token, user, initialize } = useAuthStore();
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
@@ -15,10 +15,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }, []);
 
     useEffect(() => {
-        if (ready && !token) {
-            router.push("/login");
+        if (ready) {
+            if (!token) {
+                router.push("/login");
+            } else if (user?.role === "USER") {
+                router.push("/store");
+            }
         }
-    }, [ready, token]);
+    }, [ready, token, user]);
 
     if (!ready) {
         return (
@@ -31,7 +35,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         );
     }
 
-    if (!token) return null;
+    if (!token || user?.role === "USER") return null;
 
     return <>{children}</>;
 }

@@ -43,7 +43,11 @@ export default function LoginPage() {
             const res = await api.post('/auth/login', data);
             setSession(res.data.token, res.data.user);
             toast.success('Welcome back!');
-            router.push('/dashboard');
+            if (res.data.user.role === 'ADMIN') {
+                router.push('/dashboard');
+            } else {
+                router.push('/store');
+            }
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Invalid credentials');
         }

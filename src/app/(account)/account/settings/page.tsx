@@ -30,21 +30,16 @@ type ProfileForm = z.infer<typeof profileSchema>;
 const inputClass =
     "bg-[#07111B] border-[#1f2d3d] text-[#F3F4F6] placeholder:text-[#6B7280] focus:border-[#C89B5A]/50 h-10 rounded-xl";
 
+const tabs = [
+    { key: "profile", label: "Profile", icon: User },
+    { key: "security", label: "Security", icon: Shield },
+    { key: "notifications", label: "Notifications", icon: Bell },
+    { key: "appearance", label: "Appearance", icon: Palette },
+];
+
 export default function AccountSettingsPage() {
     const { user } = useAuthStore();
     const isAdmin = user?.role === "ADMIN";
-
-    const tabs = isAdmin
-        ? [
-            { key: "profile", label: "Profile", icon: User },
-            { key: "security", label: "Security", icon: Shield },
-            { key: "notifications", label: "Notifications", icon: Bell },
-            { key: "appearance", label: "Appearance", icon: Palette },
-        ]
-        : [
-            { key: "profile", label: "Profile", icon: User },
-            { key: "security", label: "Security", icon: Shield },
-        ];
 
     const [activeTab, setActiveTab] = useState("profile");
     const [notifications, setNotifications] = useState({
@@ -114,7 +109,6 @@ export default function AccountSettingsPage() {
     return (
         <>
             <div className="min-h-screen bg-[#07111B]">
-                {/* Header solo para usuarios — admins ya tienen el Header del dashboard */}
                 {!isAdmin && (
                     <div className="border-b border-[#1f2d3d] px-6 h-16 flex items-center gap-3">
                         <Link href="/store">
@@ -129,8 +123,7 @@ export default function AccountSettingsPage() {
                     </div>
                 )}
 
-                <div className="flex h-[calc(100vh-4rem)]">
-                    {/* Left sidebar */}
+                <div className={`flex ${isAdmin ? "h-screen" : "h-[calc(100vh-4rem)]"}`}>
                     <aside className="w-56 border-r border-[#1f2d3d] p-4 shrink-0">
                         <nav className="space-y-1">
                             {tabs.map((tab) => (
@@ -151,7 +144,6 @@ export default function AccountSettingsPage() {
                         </nav>
                     </aside>
 
-                    {/* Right content */}
                     <div className="flex-1 overflow-y-auto p-8">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -162,7 +154,6 @@ export default function AccountSettingsPage() {
                                 transition={{ duration: 0.2 }}
                                 className="max-w-2xl"
                             >
-                                {/* Profile */}
                                 {activeTab === "profile" && (
                                     <div className="bg-[#111827] border border-[#1f2d3d] rounded-2xl p-6 space-y-6">
                                         <div>
@@ -170,7 +161,6 @@ export default function AccountSettingsPage() {
                                             <p className="text-xs text-[#9CA3AF] mt-0.5">Update your personal information.</p>
                                         </div>
                                         <div className="h-px bg-[#1f2d3d]" />
-
                                         <div className="flex items-center gap-4">
                                             <div className="relative">
                                                 <Avatar className="w-16 h-16">
@@ -184,12 +174,11 @@ export default function AccountSettingsPage() {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-semibold text-[#F3F4F6]">{user?.name}</p>
-                                                <p className="text-xs text-[#9CA3AF] capitalize">
+                                                <p className="text-xs text-[#9CA3AF]">
                                                     {isAdmin ? "Administrator" : "Customer"}
                                                 </p>
                                             </div>
                                         </div>
-
                                         <form onSubmit={handleSubmit(onSaveProfile)} className="space-y-4">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
@@ -203,8 +192,6 @@ export default function AccountSettingsPage() {
                                                     {errors.email && <p className="text-xs text-red-400">{errors.email.message}</p>}
                                                 </div>
                                             </div>
-
-                                            {/* Company + Role para admin, solo Company para user */}
                                             <div className={`grid gap-4 ${isAdmin ? "grid-cols-2" : "grid-cols-1"}`}>
                                                 <div className="space-y-2">
                                                     <Label className="text-sm text-[#9CA3AF]">Company</Label>
@@ -221,7 +208,6 @@ export default function AccountSettingsPage() {
                                                     </div>
                                                 )}
                                             </div>
-
                                             <div className="flex justify-end pt-2">
                                                 <Button
                                                     type="submit"
@@ -237,7 +223,6 @@ export default function AccountSettingsPage() {
                                     </div>
                                 )}
 
-                                {/* Security */}
                                 {activeTab === "security" && (
                                     <div className="bg-[#111827] border border-[#1f2d3d] rounded-2xl p-6 space-y-5">
                                         <div>
@@ -291,8 +276,7 @@ export default function AccountSettingsPage() {
                                     </div>
                                 )}
 
-                                {/* Notifications — solo admin */}
-                                {activeTab === "notifications" && isAdmin && (
+                                {activeTab === "notifications" && (
                                     <div className="bg-[#111827] border border-[#1f2d3d] rounded-2xl p-6 space-y-5">
                                         <div>
                                             <h3 className="text-sm font-semibold text-[#F3F4F6]">Notifications</h3>
@@ -325,8 +309,7 @@ export default function AccountSettingsPage() {
                                     </div>
                                 )}
 
-                                {/* Appearance — solo admin */}
-                                {activeTab === "appearance" && isAdmin && (
+                                {activeTab === "appearance" && (
                                     <div className="bg-[#111827] border border-[#1f2d3d] rounded-2xl p-6 space-y-5">
                                         <div>
                                             <h3 className="text-sm font-semibold text-[#F3F4F6]">Appearance</h3>
