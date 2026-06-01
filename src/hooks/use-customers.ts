@@ -17,8 +17,8 @@ export function useCustomers() {
     return useQuery({
         queryKey: ["customers"],
         queryFn: async () => {
-            const res = await api.get("/users");
-            return res.data as Customer[];
+            const res = await api.get("/users?limit=50");
+            return (res.data.users || res.data) as Customer[];
         },
     });
 }

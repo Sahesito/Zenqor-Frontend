@@ -22,7 +22,7 @@ const navItems = [
     { href: "/dashboard/sales", icon: ShoppingCart, label: "Sales" },
     { href: "/dashboard/customers", icon: Users, label: "Customers" },
     { href: "/dashboard/analytics", icon: BarChart3, label: "Analytics" },
-    { href: "/account/settings", icon: Settings, label: "Settings" },
+    { href: "/dashboard/settings", icon: Settings, label: "Settings" },
 ];
 
 export function Sidebar() {

@@ -15,6 +15,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const COLORS = ["#C89B5A", "#10B981", "#3B82F6", "#EF4444"];
 
+const fallbackMonthly = [
+    { month: "Jan", revenue: 0, orders: 0 },
+    { month: "Feb", revenue: 0, orders: 0 },
+    { month: "Mar", revenue: 0, orders: 0 },
+    { month: "Apr", revenue: 0, orders: 0 },
+    { month: "May", revenue: 0, orders: 0 },
+    { month: "Jun", revenue: 0, orders: 0 },
+];
+
+const fallbackByStatus = [
+    { name: "Pending", value: 0 },
+    { name: "Processing", value: 0 },
+    { name: "Completed", value: 0 },
+    { name: "Cancelled", value: 0 },
+];
+
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
@@ -36,38 +52,20 @@ export default function AnalyticsPage() {
     const { data: monthly, isLoading: loadingMonthly } = useMonthlyData();
     const { data: byStatus } = useOrdersByStatus();
 
+    const monthlyData = monthly?.length ? monthly : fallbackMonthly;
+    const statusData = byStatus?.length ? byStatus : fallbackByStatus;
+
     const metrics = [
-        {
-            title: "Total Revenue",
-            value: formatCurrency(overview?.totalRevenue || 0),
-            change: 12.5,
-            icon: DollarSign,
-        },
-        {
-            title: "Total Orders",
-            value: String(overview?.totalOrders || 0),
-            change: 8.2,
-            icon: ShoppingCart,
-        },
-        {
-            title: "Total Customers",
-            value: String(overview?.totalUsers || 0),
-            change: 15.1,
-            icon: Users,
-        },
-        {
-            title: "Products Listed",
-            value: String(overview?.totalProducts || 0),
-            change: 4.3,
-            icon: TrendingUp,
-        },
+        { title: "Total Revenue", value: formatCurrency(overview?.totalRevenue || 0), change: 12.5, icon: DollarSign },
+        { title: "Total Orders", value: String(overview?.totalOrders || 0), change: 8.2, icon: ShoppingCart },
+        { title: "Total Customers", value: String(overview?.totalUsers || 0), change: 15.1, icon: Users },
+        { title: "Products Listed", value: String(overview?.totalProducts || 0), change: 4.3, icon: TrendingUp },
     ];
 
     return (
         <>
             <Header title="Analytics" description="Track your business performance" />
             <main className="flex-1 overflow-y-auto p-6 space-y-6">
-
                 {/* Metrics */}
                 {loadingOverview ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -98,7 +96,7 @@ export default function AnalyticsPage() {
                         <Skeleton className="h-60 w-full bg-[#1f2d3d] rounded-xl" />
                     ) : (
                         <ResponsiveContainer width="100%" height={240}>
-                            <AreaChart data={monthly || []}>
+                            <AreaChart data={monthlyData}>
                                 <defs>
                                     <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#C89B5A" stopOpacity={0.15} />
@@ -117,7 +115,6 @@ export default function AnalyticsPage() {
 
                 {/* Bottom row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {/* Orders bar chart */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -129,7 +126,7 @@ export default function AnalyticsPage() {
                             <p className="text-xs text-[#9CA3AF] mt-0.5">Orders per month</p>
                         </div>
                         <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={monthly || []} barSize={28}>
+                            <BarChart data={monthlyData} barSize={28}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#1f2d3d" vertical={false} />
                                 <XAxis dataKey="month" tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fill: "#6B7280", fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -139,7 +136,6 @@ export default function AnalyticsPage() {
                         </ResponsiveContainer>
                     </motion.div>
 
-                    {/* By status pie */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -153,7 +149,7 @@ export default function AnalyticsPage() {
                         <ResponsiveContainer width="100%" height={140}>
                             <PieChart>
                                 <Pie
-                                    data={byStatus || []}
+                                    data={statusData}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={45}
@@ -161,7 +157,7 @@ export default function AnalyticsPage() {
                                     paddingAngle={3}
                                     dataKey="value"
                                 >
-                                    {(byStatus || []).map((_, i) => (
+                                    {statusData.map((_, i) => (
                                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -178,7 +174,7 @@ export default function AnalyticsPage() {
                         </ResponsiveContainer>
 
                         <div className="space-y-2 mt-2">
-                            {(byStatus || []).map((item, i) => (
+                            {statusData.map((item, i) => (
                                 <div key={item.name} className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i] }} />

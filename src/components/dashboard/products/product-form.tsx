@@ -29,6 +29,7 @@ const productSchema = z.object({
     price: z.preprocess((v) => parseFloat(String(v)), z.number().positive("Price must be positive")),
     stock: z.preprocess((v) => parseInt(String(v)), z.number().min(0, "Stock cannot be negative")),
     status: z.enum(["active", "inactive", "low_stock"]),
+    imageUrl: z.string().optional(),
 });
 
 type ProductFormValues = {
@@ -37,6 +38,7 @@ type ProductFormValues = {
     price: number;
     stock: number;
     status: "active" | "inactive" | "low_stock";
+    imageUrl?: string;
 };
 
 type ProductForm = z.infer<typeof productSchema>;
@@ -83,6 +85,7 @@ export function ProductForm({
                 price: data.price,
                 stock: data.stock,
                 categoryId: data.category,
+                imageUrl: data.imageUrl,
             });
         } else if (defaultValues?.id) {
             await updateProduct.mutateAsync({
@@ -92,6 +95,7 @@ export function ProductForm({
                     price: data.price,
                     stock: data.stock,
                     categoryId: data.category,
+                    imageUrl: data.imageUrl,
                 },
             });
         }
@@ -117,6 +121,8 @@ export function ProductForm({
                 </SheetHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
+
                     <div className="space-y-2">
                         <Label className="text-sm text-[#9CA3AF]">Product Name</Label>
                         <Input {...register("name")} placeholder="e.g. Enterprise License" className={inputClass} />
@@ -151,6 +157,15 @@ export function ProductForm({
                             <Input {...register("stock")} type="number" placeholder="0" className={inputClass} />
                             {errors.stock && <p className="text-xs text-red-400">{errors.stock.message}</p>}
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-sm text-[#9CA3AF]">Image URL (optional)</Label>
+                        <Input
+                            {...register("imageUrl")}
+                            placeholder="https://example.com/image.jpg"
+                            className={inputClass}
+                        />
                     </div>
 
                     <div className="space-y-2">

@@ -21,6 +21,7 @@ export interface CreateProductInput {
     price: number;
     stock: number;
     categoryId: string;
+    imageUrl?: string;
 }
 
 export function useProducts(search?: string) {

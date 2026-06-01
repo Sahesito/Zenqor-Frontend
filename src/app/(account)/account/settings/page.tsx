@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/auth.store";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { Camera, Shield, Bell, Palette, User, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-
 
 const profileSchema = z.object({
     name: z.string().min(2, "Name is required"),
@@ -42,6 +42,15 @@ export default function AccountSettingsPage() {
     const { user, setSession, token } = useAuthStore();
     const isAdmin = user?.role === "ADMIN";
 
+    const { data: userData } = useQuery({
+        queryKey: ["user", "profile"],
+        queryFn: async () => {
+            const res = await api.get(`/users/${user?.id}`);
+            return res.data;
+        },
+        enabled: !!user?.id,
+    });
+
     const [activeTab, setActiveTab] = useState("profile");
     const [notifications, setNotifications] = useState({
         email: true,
@@ -59,6 +68,7 @@ export default function AccountSettingsPage() {
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<ProfileForm>({
         resolver: zodResolver(profileSchema),
@@ -69,6 +79,17 @@ export default function AccountSettingsPage() {
             role: user?.role || "",
         },
     });
+
+    useEffect(() => {
+        if (userData) {
+            reset({
+                name: userData.name,
+                email: userData.email,
+                company: userData.company || "",
+                role: userData.role,
+            });
+        }
+    }, [userData]);
 
     const onSaveProfile = async (data: ProfileForm) => {
         try {
@@ -332,8 +353,8 @@ export default function AccountSettingsPage() {
                                                         key={theme.label}
                                                         onClick={() => toast.info(`${theme.label} theme coming soon`)}
                                                         className={`relative rounded-xl p-3 border transition-all duration-200 ${theme.active
-                                                            ? "border-[#C89B5A]/40 bg-[#C89B5A]/5"
-                                                            : "border-[#1f2d3d] hover:border-[#C89B5A]/20"
+                                                                ? "border-[#C89B5A]/40 bg-[#C89B5A]/5"
+                                                                : "border-[#1f2d3d] hover:border-[#C89B5A]/20"
                                                             }`}
                                                     >
                                                         <div className="w-full h-12 rounded-lg mb-2" style={{ background: theme.bg }}>

@@ -99,7 +99,15 @@ export default function StorePage() {
                             >
                                 {/* Product image placeholder */}
                                 <div className="aspect-square bg-[#1f2d3d] flex items-center justify-center relative overflow-hidden">
-                                    <Package className="w-12 h-12 text-[#6B7280]" />
+                                    {product.imageUrl ? (
+                                        <img
+                                            src={product.imageUrl}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <Package className="w-12 h-12 text-[#6B7280]" />
+                                    )}
                                     {product.stock < 10 && product.stock > 0 && (
                                         <Badge className="absolute top-2 left-2 bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
                                             Low Stock

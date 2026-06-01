@@ -43,6 +43,7 @@ export default function DashboardPage() {
 
     return (
         <>
+        
             <Header
                 title="Overview"
                 description={`Welcome back, ${user?.name?.split(" ")[0] || "there"} 👋`}
